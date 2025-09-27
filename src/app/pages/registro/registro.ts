@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { Autenticacion } from '../../services/autenticacion';
 
 @Component({
   selector: 'app-registro',
@@ -10,120 +11,64 @@ import { RouterLink } from '@angular/router';
   styleUrl: './registro.css'
 })
 export class Registro {
-  // Form data
-  registerData = {
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  };
+  servicio = inject(Autenticacion);
+  router = inject(Router);
 
-  // Form state
-  showPassword: boolean = false;
-  showConfirmPassword: boolean = false;
-  acceptTerms: boolean = false;
-  acceptNewsletter: boolean = false;
-  isLoading: boolean = false;
+  email = "";
+  password = "";
+  nombre = "";
+  edad = 0;
+  ciudad = "";
   
-  // Messages
-  message: string = '';
-  messageType: 'error' | 'success' = 'error';
+  // Estado del formulario
+  isSubmitting = false;
+  successMessage = "";
+  errorMessage = "";
 
-  // Methods
-  togglePassword(): void {
-    this.showPassword = !this.showPassword;
-  }
+  registro(datos: any) {
+    if (datos.valid) {
+      this.isSubmitting = true;
+      this.errorMessage = "";
+      this.successMessage = "";
 
-  toggleConfirmPassword(): void {
-    this.showConfirmPassword = !this.showConfirmPassword;
-  }
+      const usuario = {
+        nombre: this.nombre,
+        email: this.email,
+        password: this.password,
+        edad: this.edad,
+        ciudad: this.ciudad,
+        fechaRegistro: new Date().toISOString()
+      };
 
-  passwordsMatch(): boolean {
-    return this.registerData.password === this.registerData.confirmPassword && 
-           this.registerData.password !== '';
-  }
-
-  getPasswordStrength(): string {
-    const password = this.registerData.password;
-    if (password.length === 0) return 'none';
-    if (password.length < 6) return 'weak';
-    if (password.length < 8) return 'medium';
-    if (password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)) {
-      return 'strong';
-    }
-    return 'medium';
-  }
-
-  getPasswordStrengthPercent(): number {
-    const strength = this.getPasswordStrength();
-    switch (strength) {
-      case 'weak': return 25;
-      case 'medium': return 60;
-      case 'strong': return 100;
-      default: return 0;
-    }
-  }
-
-  getPasswordStrengthText(): string {
-    const strength = this.getPasswordStrength();
-    switch (strength) {
-      case 'weak': return 'Débil';
-      case 'medium': return 'Media';
-      case 'strong': return 'Fuerte';
-      default: return '';
-    }
-  }
-
-  isFormValid(): boolean {
-    return this.registerData.username.length >= 3 &&
-           this.registerData.email.includes('@') &&
-           this.registerData.password.length >= 6 &&
-           this.passwordsMatch() &&
-           this.acceptTerms;
-  }
-
-  onSubmit(): void {
-    if (this.isFormValid()) {
-      this.isLoading = true;
-      
-      // Simulate API call
-      setTimeout(() => {
-        this.isLoading = false;
-        
-        // Mock registration logic
-        if (this.registerData.email === 'test@test.com') {
-          this.message = 'Este email ya está registrado. Intenta con otro.';
-          this.messageType = 'error';
-        } else {
-          this.message = '¡Cuenta creada exitosamente! Bienvenido a GameStore.';
-          this.messageType = 'success';
+      this.servicio.registerUser(usuario).subscribe({
+        next: (response) => {
+          this.isSubmitting = false;
+          this.successMessage = "¡Usuario registrado exitosamente!";
           
-          // Reset form after success
+          // Limpiar el formulario
+          this.limpiarFormulario();
+          
+          // Redirigir al login después de 2 segundos
           setTimeout(() => {
-            this.registerData = {
-              username: '',
-              email: '',
-              password: '',
-              confirmPassword: ''
-            };
-            this.acceptTerms = false;
-            this.acceptNewsletter = false;
+            this.router.navigate(['/login']);
           }, 2000);
+        },
+        error: (error) => {
+          this.isSubmitting = false;
+          this.errorMessage = "Error al registrar usuario. Inténtalo nuevamente.";
+          console.error('Error en registro:', error);
         }
-        
-        // Clear message after 4 seconds
-        setTimeout(() => {
-          this.message = '';
-        }, 4000);
-        
-      }, 2500);
+      });
     } else {
-      this.message = 'Por favor, completa todos los campos correctamente y acepta los términos.';
-      this.messageType = 'error';
-      
-      setTimeout(() => {
-        this.message = '';
-      }, 3000);
+      this.errorMessage = "Por favor, completa todos los campos requeridos correctamente.";
     }
+  }
+
+  limpiarFormulario() {
+    this.nombre = "";
+    this.email = "";
+    this.password = "";
+    this.edad = 0;
+    this.ciudad = "";
   }
 }

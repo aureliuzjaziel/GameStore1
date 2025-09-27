@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { FormsModule, NgForm } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { Autenticacion } from '../../services/autenticacion';
+import { LoginA } from '../../services/login-a';
 
 @Component({
   selector: 'app-login',
@@ -10,62 +12,61 @@ import { RouterLink } from '@angular/router';
   styleUrl: './login.css'
 })
 export class Login {
-  // Form data
-  loginData = {
-    email: '',
-    password: ''
-  };
+  servicio = inject(Autenticacion);
+  servicio2 = inject(LoginA);
+  router = inject(Router);
 
-  // Form state
-  showPassword: boolean = false;
-  rememberMe: boolean = false;
-  isLoading: boolean = false;
+  email = "";
+  password = "";
   
-  // Messages
-  message: string = '';
-  messageType: 'error' | 'success' = 'error';
+  // Estados del formulario
+  isSubmitting = false;
+  successMessage = "";
+  errorMessage = "";
+  showPassword = false;
 
-  // Methods
-  togglePassword(): void {
+  login(datos: NgForm) {
+    if (datos.valid) {
+      this.isSubmitting = true;
+      this.errorMessage = "";
+      this.successMessage = "";
+
+      const credenciales = {
+        email: this.email,
+        password: this.password
+      };
+
+      this.servicio.loginUser(credenciales).subscribe({
+        next: (response) => {
+          this.isSubmitting = false;
+          if (response.success) {
+            this.servicio2.login();
+            this.successMessage = `¡Bienvenido ${response.user.nombre}!`;
+            
+            // Redirigir después de 1 segundo
+            setTimeout(() => {
+              this.router.navigate(['/productos']);
+            }, 1000);
+          } else {
+            this.errorMessage = response.message || "Credenciales incorrectas. Inténtalo nuevamente.";
+          }
+        },
+        error: (error) => {
+          this.isSubmitting = false;
+          this.errorMessage = error.message || "Error al conectar con el servidor.";
+        }
+      });
+    } else {
+      this.errorMessage = "Por favor, completa todos los campos correctamente.";
+    }
+  }
+
+  togglePassword() {
     this.showPassword = !this.showPassword;
   }
 
-  onSubmit(): void {
-    if (this.loginData.email && this.loginData.password) {
-      this.isLoading = true;
-      
-      // Simulate API call
-      setTimeout(() => {
-        this.isLoading = false;
-        
-        // Mock authentication logic
-        if (this.loginData.email === 'admin@gamestore.com' && this.loginData.password === 'admin123') {
-          this.message = '¡Bienvenido de vuelta!';
-          this.messageType = 'success';
-          // Redirect to home or dashboard
-          console.log('Login successful');
-        } else if (this.loginData.email === 'user@gamestore.com' && this.loginData.password === 'user123') {
-          this.message = '¡Sesión iniciada correctamente!';
-          this.messageType = 'success';
-          console.log('Login successful');
-        } else {
-          this.message = 'Credenciales incorrectas. Intenta nuevamente.';
-          this.messageType = 'error';
-        }
-        
-        // Clear message after 3 seconds
-        setTimeout(() => {
-          this.message = '';
-        }, 3000);
-        
-      }, 2000);
-    } else {
-      this.message = 'Por favor, completa todos los campos.';
-      this.messageType = 'error';
-      
-      setTimeout(() => {
-        this.message = '';
-      }, 3000);
-    }
+  limpiarFormulario() {
+    this.email = "";
+    this.password = "";
   }
 }

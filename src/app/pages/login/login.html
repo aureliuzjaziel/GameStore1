@@ -18,7 +18,7 @@
       <p class="login-subtitle">Accede a tu cuenta GameStore</p>
     </div>
 
-    <form class="login-form" (ngSubmit)="onSubmit()">
+    <form class="login-form" #formulario="ngForm" (ngSubmit)="login(formulario)">
       <!-- Email/Username Field -->
       <div class="form-group">
         <label for="email" class="form-label">
@@ -32,7 +32,7 @@
             name="email"
             class="form-input"
             placeholder="tu@email.com"
-            [(ngModel)]="loginData.email"
+            [(ngModel)]="email"
             required
           >
           <div class="input-glow"></div>
@@ -52,7 +52,7 @@
             name="password"
             class="form-input"
             placeholder="••••••••"
-            [(ngModel)]="loginData.password"
+            [(ngModel)]="password"
             required
           >
           <button
@@ -71,7 +71,6 @@
         <label class="checkbox-container">
           <input
             type="checkbox"
-            [(ngModel)]="rememberMe"
             name="rememberMe"
           >
           <span class="checkmark"></span>
@@ -81,17 +80,33 @@
       </div>
 
       <!-- Login Button -->
-      <button type="submit" class="login-btn" [disabled]="isLoading">
-        <span *ngIf="!isLoading">
+      <button type="submit" class="login-btn" [disabled]="formulario.invalid || isSubmitting">
+        <span *ngIf="!isSubmitting">
           <span class="btn-icon">🚀</span>
           Iniciar Sesión
         </span>
-        <span *ngIf="isLoading" class="loading-spinner">
-          <span class="spinner"></span>
+        <span *ngIf="isSubmitting">
+          <span class="btn-icon">⏳</span>
           Ingresando...
         </span>
       </button>
+
+      <!-- Messages -->
+      <div *ngIf="successMessage" class="success-message">
+        ✅ {{ successMessage }}
+      </div>
+      
+      <div *ngIf="errorMessage" class="error-message">
+        ❌ {{ errorMessage }}
+      </div>
     </form>
+
+    <!-- Credenciales de prueba -->
+    <div class="demo-credentials">
+      <h4>🎮 Credenciales de Prueba:</h4>
+      <p><strong>Admin:</strong> admin@gamestore.com / admin123</p>
+      <p><strong>Usuario:</strong> user@gamestore.com / user123</p>
+    </div>
 
     <!-- Social Login -->
     <div class="social-login">
@@ -122,14 +137,6 @@
         Registrarse Aquí
         <span class="link-arrow">→</span>
       </a>
-    </div>
-  </div>
-
-  <!-- Error/Success Messages -->
-  <div class="message-container" *ngIf="message">
-    <div class="message" [class.error]="messageType === 'error'" [class.success]="messageType === 'success'">
-      <span class="message-icon">{{ messageType === 'error' ? '⚠️' : '✅' }}</span>
-      {{ message }}
     </div>
   </div>
 

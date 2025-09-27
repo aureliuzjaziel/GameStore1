@@ -1,4 +1,173 @@
 <div class="products-container">
+  <!-- Mensajes de éxito/error -->
+  <div *ngIf="successMessage" class="message success-message">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="message error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Panel de Administración -->
+  <section *ngIf="isAdmin" class="admin-panel">
+    <div class="admin-header">
+      <h2>🔧 Panel de Administración</h2>
+      <button class="btn-primary" (click)="mostrarFormularioProducto()">
+        ➕ Nuevo Producto
+      </button>
+    </div>
+  </section>
+
+  <!-- Formulario de Producto (Modal) -->
+  <div *ngIf="showProductForm" class="modal-overlay">
+    <div class="modal-content">
+      <form #productoForm="ngForm" (ngSubmit)="guardarProducto(productoForm)">
+        <div class="modal-header">
+          <h3>{{ editingProduct ? 'Editar Producto' : 'Nuevo Producto' }}</h3>
+          <button type="button" class="close-btn" (click)="ocultarFormularioProducto()">✕</button>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="nombre">Nombre del Producto</label>
+            <input 
+              type="text" 
+              id="nombre"
+              name="nombre"
+              [(ngModel)]="nuevoProducto.nombre"
+              #nombre="ngModel"
+              required
+              class="form-input"
+              placeholder="Nombre del juego"
+            >
+            <div *ngIf="nombre.invalid && nombre.touched" class="error-text">
+              El nombre es requerido
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="precio">Precio</label>
+            <input 
+              type="number" 
+              id="precio"
+              name="precio"
+              [(ngModel)]="nuevoProducto.precio"
+              #precio="ngModel"
+              required
+              min="0"
+              step="0.01"
+              class="form-input"
+              placeholder="0.00"
+            >
+            <div *ngIf="precio.invalid && precio.touched" class="error-text">
+              El precio es requerido y debe ser mayor a 0
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="categoria">Categoría</label>
+            <select 
+              id="categoria"
+              name="categoria"
+              [(ngModel)]="nuevoProducto.categoria"
+              #categoria="ngModel"
+              required
+              class="form-input"
+            >
+              <option value="">Seleccionar categoría</option>
+              <option value="accion">Acción</option>
+              <option value="rpg">RPG</option>
+              <option value="aventura">Aventura</option>
+              <option value="deportes">Deportes</option>
+              <option value="estrategia">Estrategia</option>
+              <option value="puzzle">Puzzle</option>
+            </select>
+            <div *ngIf="categoria.invalid && categoria.touched" class="error-text">
+              La categoría es requerida
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="stock">Stock</label>
+            <input 
+              type="number" 
+              id="stock"
+              name="stock"
+              [(ngModel)]="nuevoProducto.stock"
+              #stock="ngModel"
+              required
+              min="0"
+              class="form-input"
+              placeholder="0"
+            >
+            <div *ngIf="stock.invalid && stock.touched" class="error-text">
+              El stock es requerido
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="descripcion">Descripción</label>
+            <textarea 
+              id="descripcion"
+              name="descripcion"
+              [(ngModel)]="nuevoProducto.descripcion"
+              #descripcion="ngModel"
+              required
+              class="form-input"
+              rows="3"
+              placeholder="Descripción del juego..."
+            ></textarea>
+            <div *ngIf="descripcion.invalid && descripcion.touched" class="error-text">
+              La descripción es requerida
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="imagen">URL de Imagen</label>
+            <input 
+              type="url" 
+              id="imagen"
+              name="imagen"
+              [(ngModel)]="nuevoProducto.imagen"
+              #imagen="ngModel"
+              class="form-input"
+              placeholder="https://ejemplo.com/imagen.jpg"
+            >
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox"
+                name="activo"
+                [(ngModel)]="nuevoProducto.activo"
+              >
+              Producto activo
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button 
+            type="button" 
+            class="btn-secondary" 
+            (click)="ocultarFormularioProducto()"
+            [disabled]="isSubmitting"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="btn-primary"
+            [disabled]="!productoForm.valid || isSubmitting"
+          >
+            <span *ngIf="isSubmitting">Guardando...</span>
+            <span *ngIf="!isSubmitting">{{ editingProduct ? 'Actualizar' : 'Crear' }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Header Section -->
   <section class="products-header">
     <div class="header-content">
@@ -21,6 +190,7 @@
             placeholder="Buscar juegos..." 
             class="search-input"
             [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
           >
           <button class="search-btn">🔍</button>
         </div>
@@ -74,177 +244,79 @@
 
   <!-- Products Grid -->
   <section class="products-grid-section">
-    <div class="products-grid">
-      <!-- Product Card 1 -->
-      <div class="product-card">
+    <!-- Mensaje si no hay productos -->
+    <div *ngIf="productosFiltrados.length === 0" class="no-products-message">
+      <h3>🔍 No se encontraron productos</h3>
+      <p>Intenta con otros términos de búsqueda o categoría</p>
+    </div>
+
+    <!-- Grid de productos dinámico -->
+    <div class="products-grid" *ngIf="productosFiltrados.length > 0">
+      <div class="product-card" *ngFor="let producto of productosFiltrados">
+        <!-- Botones de administración -->
+        <div *ngIf="isAdmin" class="admin-product-actions">
+          <button 
+            class="btn-edit" 
+            (click)="editarProducto(producto)"
+            title="Editar producto"
+          >
+            ✏️
+          </button>
+          <button 
+            class="btn-delete" 
+            (click)="eliminarProducto(producto.id)"
+            title="Eliminar producto"
+          >
+            🗑️
+          </button>
+        </div>
+
         <div class="product-image">
-          <div class="image-placeholder">🏆</div>
+          <div class="image-placeholder" *ngIf="!producto.imagen">🎮</div>
+          <img *ngIf="producto.imagen" [src]="producto.imagen" [alt]="producto.nombre || producto.title" class="product-img">
+          
+          <!-- Badges dinámicos -->
           <div class="product-badges">
-            <span class="discount-badge">-30%</span>
+            <span *ngIf="producto.precio === 0" class="free-badge">GRATIS</span>
+            <span *ngIf="producto.descuento" class="discount-badge">-{{producto.descuento}}%</span>
+            <span *ngIf="!producto.activo" class="inactive-badge">INACTIVO</span>
+            <span *ngIf="producto.stock === 0" class="stock-badge">SIN STOCK</span>
           </div>
+          
           <div class="product-overlay">
             <button class="quick-view-btn">👁️ Vista Rápida</button>
           </div>
         </div>
+        
         <div class="product-info">
-          <h3 class="product-title">Epic Adventure Chronicles</h3>
-          <p class="product-category">RPG • Aventura</p>
+          <h3 class="product-title">{{ producto.nombre || producto.title }}</h3>
+          <p class="product-category">{{ producto.categoria || producto.category | titlecase }}</p>
+          
           <div class="product-rating">
             <span class="stars">⭐⭐⭐⭐⭐</span>
-            <span class="rating-value">(4.8)</span>
+            <span class="rating-value">({{ producto.rating || '4.5' }})</span>
           </div>
+          
           <div class="product-price">
-            <span class="price-original">$59.99</span>
-            <span class="price-current">$41.99</span>
+            <span *ngIf="producto.precio === 0" class="price-free">GRATIS</span>
+            <span *ngIf="producto.precio > 0" class="price-current">${{ producto.precio | number:'1.2-2' }}</span>
           </div>
+          
+          <div class="product-stock" *ngIf="producto.stock !== undefined">
+            <span [class]="producto.stock > 0 ? 'stock-available' : 'stock-unavailable'">
+              {{ producto.stock > 0 ? 'Stock: ' + producto.stock : 'Sin stock' }}
+            </span>
+          </div>
+          
           <div class="product-actions">
-            <button class="btn-add-cart">
-              🛒 Agregar al Carrito
-            </button>
-            <button class="btn-wishlist">❤️</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product Card 2 -->
-      <div class="product-card">
-        <div class="product-image">
-          <div class="image-placeholder">🚗</div>
-          <div class="product-badges">
-            <span class="new-badge">NUEVO</span>
-          </div>
-          <div class="product-overlay">
-            <button class="quick-view-btn">👁️ Vista Rápida</button>
-          </div>
-        </div>
-        <div class="product-info">
-          <h3 class="product-title">Speed Racing Ultimate</h3>
-          <p class="product-category">Carreras • Deportes</p>
-          <div class="product-rating">
-            <span class="stars">⭐⭐⭐⭐☆</span>
-            <span class="rating-value">(4.5)</span>
-          </div>
-          <div class="product-price">
-            <span class="price-current">$49.99</span>
-          </div>
-          <div class="product-actions">
-            <button class="btn-add-cart">
-              🛒 Agregar al Carrito
-            </button>
-            <button class="btn-wishlist">❤️</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product Card 3 -->
-      <div class="product-card">
-        <div class="product-image">
-          <div class="image-placeholder">⚔️</div>
-          <div class="product-badges">
-            <span class="free-badge">GRATIS</span>
-          </div>
-          <div class="product-overlay">
-            <button class="quick-view-btn">👁️ Vista Rápida</button>
-          </div>
-        </div>
-        <div class="product-info">
-          <h3 class="product-title">Battle Arena Legends</h3>
-          <p class="product-category">MOBA • Estrategia</p>
-          <div class="product-rating">
-            <span class="stars">⭐⭐⭐⭐⭐</span>
-            <span class="rating-value">(4.9)</span>
-          </div>
-          <div class="product-price">
-            <span class="price-free">GRATIS</span>
-          </div>
-          <div class="product-actions">
-            <button class="btn-add-cart">
-              📥 Descargar Gratis
-            </button>
-            <button class="btn-wishlist">❤️</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product Card 4 -->
-      <div class="product-card">
-        <div class="product-image">
-          <div class="image-placeholder">🌟</div>
-          <div class="product-overlay">
-            <button class="quick-view-btn">👁️ Vista Rápida</button>
-          </div>
-        </div>
-        <div class="product-info">
-          <h3 class="product-title">Cosmic Quest Infinity</h3>
-          <p class="product-category">Sci-Fi • Exploración</p>
-          <div class="product-rating">
-            <span class="stars">⭐⭐⭐⭐☆</span>
-            <span class="rating-value">(4.6)</span>
-          </div>
-          <div class="product-price">
-            <span class="price-current">$34.99</span>
-          </div>
-          <div class="product-actions">
-            <button class="btn-add-cart">
-              🛒 Agregar al Carrito
-            </button>
-            <button class="btn-wishlist">❤️</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product Card 5 -->
-      <div class="product-card">
-        <div class="product-image">
-          <div class="image-placeholder">🎯</div>
-          <div class="product-badges">
-            <span class="discount-badge">-25%</span>
-          </div>
-          <div class="product-overlay">
-            <button class="quick-view-btn">👁️ Vista Rápida</button>
-          </div>
-        </div>
-        <div class="product-info">
-          <h3 class="product-title">Sniper Elite Force</h3>
-          <p class="product-category">Acción • Shooter</p>
-          <div class="product-rating">
-            <span class="stars">⭐⭐⭐⭐☆</span>
-            <span class="rating-value">(4.4)</span>
-          </div>
-          <div class="product-price">
-            <span class="price-original">$39.99</span>
-            <span class="price-current">$29.99</span>
-          </div>
-          <div class="product-actions">
-            <button class="btn-add-cart">
-              🛒 Agregar al Carrito
-            </button>
-            <button class="btn-wishlist">❤️</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product Card 6 -->
-      <div class="product-card">
-        <div class="product-image">
-          <div class="image-placeholder">⚽</div>
-          <div class="product-overlay">
-            <button class="quick-view-btn">👁️ Vista Rápida</button>
-          </div>
-        </div>
-        <div class="product-info">
-          <h3 class="product-title">FIFA Championship 2025</h3>
-          <p class="product-category">Deportes • Fútbol</p>
-          <div class="product-rating">
-            <span class="stars">⭐⭐⭐⭐⭐</span>
-            <span class="rating-value">(4.7)</span>
-          </div>
-          <div class="product-price">
-            <span class="price-current">$59.99</span>
-          </div>
-          <div class="product-actions">
-            <button class="btn-add-cart">
-              🛒 Agregar al Carrito
+            <button 
+              class="btn-add-cart"
+              [disabled]="producto.stock === 0"
+              [class.disabled]="producto.stock === 0"
+            >
+              <span *ngIf="producto.precio === 0">📥 Descargar Gratis</span>
+              <span *ngIf="producto.precio > 0 && producto.stock > 0">🛒 Agregar al Carrito</span>
+              <span *ngIf="producto.stock === 0">❌ Sin Stock</span>
             </button>
             <button class="btn-wishlist">❤️</button>
           </div>
@@ -254,7 +326,7 @@
   </section>
 
   <!-- Pagination -->
-  <section class="pagination-section">
+  <section class="pagination-section" *ngIf="productosFiltrados.length > 0">
     <div class="pagination">
       <button class="page-btn prev-btn">◀ Anterior</button>
       <button class="page-btn active">1</button>
@@ -262,27 +334,6 @@
       <button class="page-btn">3</button>
       <button class="page-btn">4</button>
       <button class="page-btn next-btn">Siguiente ▶</button>
-    </div>
-  </section>
-
-  <!-- Admin Actions (Only for Admin Users) -->
-  <section class="admin-actions" *ngIf="isAdmin">
-    <div class="admin-panel">
-      <h3 class="admin-title">
-        <span class="admin-icon">⚙️</span>
-        Panel de Administrador
-      </h3>
-      <div class="admin-buttons">
-        <button class="btn-admin btn-add">
-          ➕ Agregar Nuevo Juego
-        </button>
-        <button class="btn-admin btn-manage">
-          📊 Gestionar Inventario
-        </button>
-        <button class="btn-admin btn-reports">
-          📈 Ver Reportes
-        </button>
-      </div>
     </div>
   </section>
 </div>

@@ -19,21 +19,21 @@
       <p class="register-subtitle">Únete a la comunidad GameStore</p>
     </div>
 
-    <form class="register-form" (ngSubmit)="onSubmit()">
+    <form class="register-form" #formulario="ngForm" (ngSubmit)="registro(formulario)">
       <!-- Username Field -->
       <div class="form-group">
-        <label for="username" class="form-label">
+        <label for="nombre" class="form-label">
           <span class="label-icon">👤</span>
           Nombre de Usuario
         </label>
         <div class="input-container">
           <input
             type="text"
-            id="username"
-            name="username"
+            id="nombre"
+            name="nombre"
             class="form-input"
             placeholder="Tu nombre de usuario único"
-            [(ngModel)]="registerData.username"
+            [(ngModel)]="nombre"
             required
             minlength="3"
           >
@@ -55,7 +55,7 @@
             name="email"
             class="form-input"
             placeholder="tu@email.com"
-            [(ngModel)]="registerData.email"
+            [(ngModel)]="email"
             required
           >
           <div class="input-glow"></div>
@@ -70,110 +70,86 @@
         </label>
         <div class="input-container">
           <input
-            [type]="showPassword ? 'text' : 'password'"
+            type="password"
             id="password"
             name="password"
             class="form-input"
             placeholder="••••••••"
-            [(ngModel)]="registerData.password"
+            [(ngModel)]="password"
             required
             minlength="6"
           >
-          <button
-            type="button"
-            class="password-toggle"
-            (click)="togglePassword()"
-          >
-            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
-          </button>
           <div class="input-glow"></div>
-        </div>
-        <div class="password-strength">
-          <div class="strength-bar">
-            <div 
-              class="strength-fill" 
-              [class]="getPasswordStrength()"
-              [style.width.%]="getPasswordStrengthPercent()"
-            ></div>
-          </div>
-          <span class="strength-text">{{ getPasswordStrengthText() }}</span>
         </div>
       </div>
 
-      <!-- Confirm Password Field -->
+      <!-- Edad Field -->
       <div class="form-group">
-        <label for="confirmPassword" class="form-label">
-          <span class="label-icon">🔐</span>
-          Confirmar Contraseña
+        <label for="edad" class="form-label">
+          <span class="label-icon">🎂</span>
+          Edad
         </label>
         <div class="input-container">
           <input
-            [type]="showConfirmPassword ? 'text' : 'password'"
-            id="confirmPassword"
-            name="confirmPassword"
+            type="number"
+            id="edad"
+            name="edad"
             class="form-input"
-            placeholder="••••••••"
-            [(ngModel)]="registerData.confirmPassword"
+            placeholder="Tu edad"
+            [(ngModel)]="edad"
             required
+            min="13"
+            max="120"
           >
-          <button
-            type="button"
-            class="password-toggle"
-            (click)="toggleConfirmPassword()"
-          >
-            {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
-          </button>
           <div class="input-glow"></div>
         </div>
-        <div class="field-validation" *ngIf="registerData.password && registerData.confirmPassword">
-          <span 
-            [class.valid]="passwordsMatch()" 
-            [class.invalid]="!passwordsMatch()"
-          >
-            {{ passwordsMatch() ? '✅ Las contraseñas coinciden' : '❌ Las contraseñas no coinciden' }}
-          </span>
-        </div>
+        <div class="field-hint">Debes ser mayor de 13 años</div>
       </div>
 
-      <!-- Terms and Newsletter -->
-      <div class="form-checkboxes">
-        <label class="checkbox-container">
+      <!-- Ciudad Field -->
+      <div class="form-group">
+        <label for="ciudad" class="form-label">
+          <span class="label-icon">🏙️</span>
+          Ciudad
+        </label>
+        <div class="input-container">
           <input
-            type="checkbox"
-            [(ngModel)]="acceptTerms"
-            name="acceptTerms"
+            type="text"
+            id="ciudad"
+            name="ciudad"
+            class="form-input"
+            placeholder="Tu ciudad"
+            [(ngModel)]="ciudad"
             required
           >
-          <span class="checkmark"></span>
-          Acepto los <a href="#" class="link">Términos y Condiciones</a>
-        </label>
-
-        <label class="checkbox-container">
-          <input
-            type="checkbox"
-            [(ngModel)]="acceptNewsletter"
-            name="acceptNewsletter"
-          >
-          <span class="checkmark"></span>
-          Quiero recibir ofertas y noticias por email
-        </label>
+          <div class="input-glow"></div>
+        </div>
       </div>
 
       <!-- Register Button -->
       <button 
         type="submit" 
         class="register-btn" 
-        [disabled]="!isFormValid() || isLoading"
+        [disabled]="formulario.invalid || isSubmitting"
       >
-        <span *ngIf="!isLoading">
+        <span *ngIf="!isSubmitting">
           <span class="btn-icon">🚀</span>
           Crear Cuenta
         </span>
-        <span *ngIf="isLoading" class="loading-spinner">
-          <span class="spinner"></span>
-          Creando cuenta...
+        <span *ngIf="isSubmitting">
+          <span class="btn-icon">⏳</span>
+          Registrando...
         </span>
       </button>
+
+      <!-- Messages -->
+      <div *ngIf="successMessage" class="success-message">
+        ✅ {{ successMessage }}
+      </div>
+      
+      <div *ngIf="errorMessage" class="error-message">
+        ❌ {{ errorMessage }}
+      </div>
     </form>
 
     <!-- Social Register -->
@@ -205,14 +181,6 @@
         Iniciar Sesión
         <span class="link-arrow">→</span>
       </a>
-    </div>
-  </div>
-
-  <!-- Error/Success Messages -->
-  <div class="message-container" *ngIf="message">
-    <div class="message" [class.error]="messageType === 'error'" [class.success]="messageType === 'success'">
-      <span class="message-icon">{{ messageType === 'error' ? '⚠️' : '✅' }}</span>
-      {{ message }}
     </div>
   </div>
 
