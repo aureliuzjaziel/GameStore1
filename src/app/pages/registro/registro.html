@@ -1,0 +1,226 @@
+<div class="register-container">
+  <!-- Background Effects -->
+  <div class="register-background">
+    <div class="bg-particles">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
+  </div>
+
+  <!-- Register Card -->
+  <div class="register-card">
+    <div class="register-header">
+      <div class="register-icon">👤</div>
+      <h1 class="register-title">Crear Cuenta</h1>
+      <p class="register-subtitle">Únete a la comunidad GameStore</p>
+    </div>
+
+    <form class="register-form" (ngSubmit)="onSubmit()">
+      <!-- Username Field -->
+      <div class="form-group">
+        <label for="username" class="form-label">
+          <span class="label-icon">👤</span>
+          Nombre de Usuario
+        </label>
+        <div class="input-container">
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-input"
+            placeholder="Tu nombre de usuario único"
+            [(ngModel)]="registerData.username"
+            required
+            minlength="3"
+          >
+          <div class="input-glow"></div>
+        </div>
+        <div class="field-hint">Mínimo 3 caracteres, solo letras y números</div>
+      </div>
+
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email" class="form-label">
+          <span class="label-icon">📧</span>
+          Correo Electrónico
+        </label>
+        <div class="input-container">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-input"
+            placeholder="tu@email.com"
+            [(ngModel)]="registerData.email"
+            required
+          >
+          <div class="input-glow"></div>
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password" class="form-label">
+          <span class="label-icon">🔒</span>
+          Contraseña
+        </label>
+        <div class="input-container">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            name="password"
+            class="form-input"
+            placeholder="••••••••"
+            [(ngModel)]="registerData.password"
+            required
+            minlength="6"
+          >
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="togglePassword()"
+          >
+            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
+          <div class="input-glow"></div>
+        </div>
+        <div class="password-strength">
+          <div class="strength-bar">
+            <div 
+              class="strength-fill" 
+              [class]="getPasswordStrength()"
+              [style.width.%]="getPasswordStrengthPercent()"
+            ></div>
+          </div>
+          <span class="strength-text">{{ getPasswordStrengthText() }}</span>
+        </div>
+      </div>
+
+      <!-- Confirm Password Field -->
+      <div class="form-group">
+        <label for="confirmPassword" class="form-label">
+          <span class="label-icon">🔐</span>
+          Confirmar Contraseña
+        </label>
+        <div class="input-container">
+          <input
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            id="confirmPassword"
+            name="confirmPassword"
+            class="form-input"
+            placeholder="••••••••"
+            [(ngModel)]="registerData.confirmPassword"
+            required
+          >
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="toggleConfirmPassword()"
+          >
+            {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
+          <div class="input-glow"></div>
+        </div>
+        <div class="field-validation" *ngIf="registerData.password && registerData.confirmPassword">
+          <span 
+            [class.valid]="passwordsMatch()" 
+            [class.invalid]="!passwordsMatch()"
+          >
+            {{ passwordsMatch() ? '✅ Las contraseñas coinciden' : '❌ Las contraseñas no coinciden' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Terms and Newsletter -->
+      <div class="form-checkboxes">
+        <label class="checkbox-container">
+          <input
+            type="checkbox"
+            [(ngModel)]="acceptTerms"
+            name="acceptTerms"
+            required
+          >
+          <span class="checkmark"></span>
+          Acepto los <a href="#" class="link">Términos y Condiciones</a>
+        </label>
+
+        <label class="checkbox-container">
+          <input
+            type="checkbox"
+            [(ngModel)]="acceptNewsletter"
+            name="acceptNewsletter"
+          >
+          <span class="checkmark"></span>
+          Quiero recibir ofertas y noticias por email
+        </label>
+      </div>
+
+      <!-- Register Button -->
+      <button 
+        type="submit" 
+        class="register-btn" 
+        [disabled]="!isFormValid() || isLoading"
+      >
+        <span *ngIf="!isLoading">
+          <span class="btn-icon">🚀</span>
+          Crear Cuenta
+        </span>
+        <span *ngIf="isLoading" class="loading-spinner">
+          <span class="spinner"></span>
+          Creando cuenta...
+        </span>
+      </button>
+    </form>
+
+    <!-- Social Register -->
+    <div class="social-register">
+      <div class="divider">
+        <span class="divider-text">O regístrate con</span>
+      </div>
+      
+      <div class="social-buttons">
+        <button class="social-btn google-btn">
+          <span class="social-icon">🌐</span>
+          Google
+        </button>
+        <button class="social-btn steam-btn">
+          <span class="social-icon">🎮</span>
+          Steam
+        </button>
+        <button class="social-btn discord-btn">
+          <span class="social-icon">🎯</span>
+          Discord
+        </button>
+      </div>
+    </div>
+
+    <!-- Login Link -->
+    <div class="login-link">
+      <p>¿Ya tienes una cuenta?</p>
+      <a routerLink="/login" class="login-btn-link">
+        Iniciar Sesión
+        <span class="link-arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Error/Success Messages -->
+  <div class="message-container" *ngIf="message">
+    <div class="message" [class.error]="messageType === 'error'" [class.success]="messageType === 'success'">
+      <span class="message-icon">{{ messageType === 'error' ? '⚠️' : '✅' }}</span>
+      {{ message }}
+    </div>
+  </div>
+
+  <!-- Gaming Elements -->
+  <div class="gaming-elements">
+    <div class="floating-trophy">🏆</div>
+    <div class="floating-gamepad">🎮</div>
+    <div class="floating-rocket">🚀</div>
+    <div class="floating-gem">💎</div>
+  </div>
+</div>

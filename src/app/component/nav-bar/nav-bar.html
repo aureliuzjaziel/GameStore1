@@ -1,0 +1,63 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <!-- Logo -->
+    <div class="nav-logo">
+      <span class="logo-icon">🎮</span>
+      <span class="logo-text">GameStore</span>
+    </div>
+
+    <!-- Menu Items -->
+    <ul class="nav-menu" [class.active]="isMobileMenuOpen">
+      <li class="nav-item">
+        <a routerLink="/home" class="nav-link" routerLinkActive="active" (click)="closeMobileMenu()">
+          <i class="icon">🏠</i>
+          <span>Inicio</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/productos" class="nav-link" routerLinkActive="active" (click)="closeMobileMenu()">
+          <i class="icon">🎯</i>
+          <span>Juegos</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/login" class="nav-link" routerLinkActive="active" (click)="closeMobileMenu()">
+          <i class="icon">🔐</i>
+          <span>Login</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/registro" class="nav-link" routerLinkActive="active" (click)="closeMobileMenu()">
+          <i class="icon">👤</i>
+          <span>Registro</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+      <input type="text" placeholder="Buscar juegos..." class="search-input">
+      <button class="search-btn">🔍</button>
+    </div>
+
+    <!-- Cart & Profile -->
+    <div class="nav-actions">
+      <button class="cart-btn">
+        <span class="cart-icon">🛒</span>
+        <span class="cart-count">0</span>
+      </button>
+      <div class="profile-menu">
+        <button class="profile-btn">
+          <span class="profile-avatar">👤</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <div class="hamburger" (click)="toggleMobileMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+</nav>
