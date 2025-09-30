@@ -9,7 +9,7 @@ export class Autenticacion {
 
   constructor(private http: HttpClient) { }
 
-  private API_AUTOR = "http://localhost:9090/productos"
+  private API_AUTOR = "http://localhost:9090/api/juegos"
   private API_USUARIOS = "http://localhost:3000/usuarios"
   
   getProducto():Observable<any>{

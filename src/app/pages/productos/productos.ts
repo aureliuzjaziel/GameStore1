@@ -34,6 +34,7 @@ export class Productos implements OnInit {
   
   // Formulario de producto
   nuevoProducto = {
+    
     nombre: '',
     descripcion: '',
     precio: 0,
