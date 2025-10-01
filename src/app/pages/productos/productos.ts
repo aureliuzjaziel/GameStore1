@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Autenticacion } from '../../services/autenticacion';
+import { Productos as ProductosService } from '../../services/productos';
 import { LoginA } from '../../services/login-a';
 
 @Component({
@@ -10,9 +10,9 @@ import { LoginA } from '../../services/login-a';
   templateUrl: './productos.html',
   styleUrl: './productos.css'
 })
-export class Productos implements OnInit {
+export class ProductosComponent implements OnInit {
   // Servicios inyectados
-  servicio = inject(Autenticacion);
+  productosService = inject(ProductosService);
   loginService = inject(LoginA);
 
   // Search and filter properties
@@ -23,25 +23,26 @@ export class Productos implements OnInit {
   // User role
   isAdmin: boolean = false;
   
-  // Productos desde la API
+  // Productos y categorías desde la API
   productos: any[] = [];
   productosFiltrados: any[] = [];
+  categorias: any[] = [];
   
   // Form properties para crear/editar productos
   showProductForm: boolean = false;
   editingProduct: any = null;
   isSubmitting: boolean = false;
   
-  // Formulario de producto
+  // Formulario de producto (ajustado para Spring Boot)
   nuevoProducto = {
-    
     nombre: '',
     descripcion: '',
     precio: 0,
-    categoria: '',
     imagen: '',
     stock: 0,
-    activo: true
+    desarrollador: '',
+    plataforma: '',
+    categoria: { id: null as number | null }
   };
   
   // Mensajes
@@ -50,25 +51,40 @@ export class Productos implements OnInit {
 
   ngOnInit() {
     this.checkUserRole();
+    this.cargarCategorias();
     this.cargarProductos();
   }
 
   checkUserRole() {
-    // Aquí puedes implementar la lógica para verificar si el usuario es admin
-    this.isAdmin = this.loginService.logeado(); // Por ahora, cualquier usuario logueado es admin
+    this.isAdmin = this.loginService.logeado();
+  }
+
+  cargarCategorias() {
+    this.productosService.getCategorias().subscribe({
+      next: (categorias: any) => {
+        this.categorias = categorias;
+        console.log('Categorías cargadas desde API:', categorias);
+        this.clearMessages();
+      },
+      error: (error: any) => {
+        console.error('Error al cargar categorías:', error);
+        this.errorMessage = 'Error al conectar con el servidor de categorías';
+        this.categorias = [];
+      }
+    });
   }
 
   cargarProductos() {
-    this.servicio.getProducto().subscribe({
-      next: (productos) => {
+    this.productosService.getProductos().subscribe({
+      next: (productos: any) => {
         this.productos = productos;
         this.productosFiltrados = productos;
         console.log('Productos cargados:', productos);
+        this.clearMessages();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error al cargar productos:', error);
         this.errorMessage = 'Error al cargar productos desde el servidor';
-        // Fallback con datos de ejemplo
         this.productos = [];
         this.productosFiltrados = [];
       }
@@ -94,21 +110,32 @@ export class Productos implements OnInit {
       this.errorMessage = '';
       this.successMessage = '';
 
+      // Preparar el objeto para enviar
+      const productoParaEnviar: any = {
+        nombre: this.nuevoProducto.nombre,
+        descripcion: this.nuevoProducto.descripcion,
+        precio: this.nuevoProducto.precio,
+        imagen: this.nuevoProducto.imagen,
+        stock: this.nuevoProducto.stock,
+        desarrollador: this.nuevoProducto.desarrollador,
+        plataforma: this.nuevoProducto.plataforma,
+        categoria: {
+          id: this.nuevoProducto.categoria.id
+        }
+      };
+
       if (this.editingProduct) {
         // Actualizar producto existente
-        const productoActualizado = {
-          ...this.nuevoProducto,
-          id: this.editingProduct.id
-        };
+        productoParaEnviar.id = this.editingProduct.id;
         
-        this.servicio.putProductos(productoActualizado).subscribe({
-          next: (response) => {
+        this.productosService.putProducto(productoParaEnviar).subscribe({
+          next: (response: any) => {
             this.isSubmitting = false;
             this.successMessage = 'Producto actualizado exitosamente';
             this.cargarProductos();
             this.ocultarFormularioProducto();
           },
-          error: (error) => {
+          error: (error: any) => {
             this.isSubmitting = false;
             this.errorMessage = 'Error al actualizar el producto';
             console.error('Error:', error);
@@ -116,14 +143,14 @@ export class Productos implements OnInit {
         });
       } else {
         // Crear nuevo producto
-        this.servicio.postProducto(this.nuevoProducto).subscribe({
-          next: (response) => {
+        this.productosService.postProducto(productoParaEnviar).subscribe({
+          next: (response: any) => {
             this.isSubmitting = false;
             this.successMessage = 'Producto creado exitosamente';
             this.cargarProductos();
             this.ocultarFormularioProducto();
           },
-          error: (error) => {
+          error: (error: any) => {
             this.isSubmitting = false;
             this.errorMessage = 'Error al crear el producto';
             console.error('Error:', error);
@@ -136,25 +163,26 @@ export class Productos implements OnInit {
   editarProducto(producto: any) {
     this.editingProduct = producto;
     this.nuevoProducto = {
-      nombre: producto.nombre || producto.title || '',
-      descripcion: producto.descripcion || producto.description || '',
-      precio: producto.precio || producto.price || 0,
-      categoria: producto.categoria || producto.category || '',
-      imagen: producto.imagen || producto.image || '',
+      nombre: producto.nombre || '',
+      descripcion: producto.descripcion || '',
+      precio: producto.precio || 0,
+      imagen: producto.imagen || '',
       stock: producto.stock || 0,
-      activo: producto.activo !== undefined ? producto.activo : true
+      desarrollador: producto.desarrollador || '',
+      plataforma: producto.plataforma || '',
+      categoria: { id: producto.categoria?.id || null }
     };
     this.showProductForm = true;
   }
 
   eliminarProducto(id: number) {
     if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-      this.servicio.deleteProductos(id).subscribe({
-        next: (response) => {
+      this.productosService.deleteProducto(id).subscribe({
+        next: (response: any) => {
           this.successMessage = 'Producto eliminado exitosamente';
           this.cargarProductos();
         },
-        error: (error) => {
+        error: (error: any) => {
           this.errorMessage = 'Error al eliminar el producto';
           console.error('Error:', error);
         }
@@ -167,11 +195,19 @@ export class Productos implements OnInit {
       nombre: '',
       descripcion: '',
       precio: 0,
-      categoria: '',
       imagen: '',
       stock: 0,
-      activo: true
+      desarrollador: '',
+      plataforma: '',
+      categoria: { id: null }
     };
+  }
+
+  clearMessages() {
+    setTimeout(() => {
+      this.successMessage = '';
+      this.errorMessage = '';
+    }, 5000);
   }
   
   // Methods for filtering and searching
@@ -186,15 +222,15 @@ export class Productos implements OnInit {
     // Filtrar por categoría
     if (this.selectedCategory !== 'all') {
       productosFiltrados = productosFiltrados.filter(producto => 
-        (producto.categoria || producto.category || '').toLowerCase() === this.selectedCategory.toLowerCase()
+        (producto.categoria?.nombre || '').toLowerCase() === this.selectedCategory.toLowerCase()
       );
     }
 
     // Filtrar por término de búsqueda
     if (this.searchTerm) {
       productosFiltrados = productosFiltrados.filter(producto => 
-        (producto.nombre || producto.title || '').toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        (producto.descripcion || producto.description || '').toLowerCase().includes(this.searchTerm.toLowerCase())
+        (producto.nombre || '').toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        (producto.descripcion || '').toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     }
 

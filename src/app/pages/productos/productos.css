@@ -883,3 +883,27 @@
     text-align: center;
   }
 }
+
+/* Nuevos estilos para elementos de Spring Boot */
+.product-developer,
+.product-platform {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.product-developer .label,
+.product-platform .label {
+  color: #00ffff;
+  font-weight: 500;
+}
+
+.help-text {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  font-style: italic;
+}

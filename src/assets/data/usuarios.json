@@ -1,1 +1,22 @@
-[]
+{
+  "usuarios": [
+    {
+      "nombre": "paco",
+      "email": "paco@yopmail.com",
+      "password": "123456",
+      "edad": 20,
+      "ciudad": "quito",
+      "fechaRegistro": "2025-09-27T13:23:19.424Z",
+      "id": 1
+    },
+    {
+      "nombre": "taco",
+      "email": "taco@yopmail.com",
+      "password": "123456",
+      "edad": 20,
+      "ciudad": "quito",
+      "fechaRegistro": "2025-09-30T23:31:34.331Z",
+      "id": 2
+    }
+  ]
+}

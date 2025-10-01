@@ -28,7 +28,7 @@
         
         <div class="form-grid">
           <div class="form-group">
-            <label for="nombre">Nombre del Producto</label>
+            <label for="nombre">Nombre del Juego</label>
             <input 
               type="text" 
               id="nombre"
@@ -45,7 +45,7 @@
           </div>
 
           <div class="form-group">
-            <label for="precio">Precio</label>
+            <label for="precio">Precio ($)</label>
             <input 
               type="number" 
               id="precio"
@@ -68,18 +68,15 @@
             <select 
               id="categoria"
               name="categoria"
-              [(ngModel)]="nuevoProducto.categoria"
+              [(ngModel)]="nuevoProducto.categoria.id"
               #categoria="ngModel"
               required
               class="form-input"
             >
               <option value="">Seleccionar categoría</option>
-              <option value="accion">Acción</option>
-              <option value="rpg">RPG</option>
-              <option value="aventura">Aventura</option>
-              <option value="deportes">Deportes</option>
-              <option value="estrategia">Estrategia</option>
-              <option value="puzzle">Puzzle</option>
+              <option *ngFor="let cat of categorias" [value]="cat.id">
+                {{ cat.nombre | titlecase }}
+              </option>
             </select>
             <div *ngIf="categoria.invalid && categoria.touched" class="error-text">
               La categoría es requerida
@@ -87,7 +84,7 @@
           </div>
 
           <div class="form-group">
-            <label for="stock">Stock</label>
+            <label for="stock">Stock Disponible</label>
             <input 
               type="number" 
               id="stock"
@@ -104,8 +101,42 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label for="desarrollador">Desarrollador</label>
+            <input 
+              type="text" 
+              id="desarrollador"
+              name="desarrollador"
+              [(ngModel)]="nuevoProducto.desarrollador"
+              #desarrollador="ngModel"
+              required
+              class="form-input"
+              placeholder="Nombre del desarrollador"
+            >
+            <div *ngIf="desarrollador.invalid && desarrollador.touched" class="error-text">
+              El desarrollador es requerido
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="plataforma">Plataforma</label>
+            <input 
+              type="text" 
+              id="plataforma"
+              name="plataforma"
+              [(ngModel)]="nuevoProducto.plataforma"
+              #plataforma="ngModel"
+              required
+              class="form-input"
+              placeholder="PC, PS5, Xbox, Mobile..."
+            >
+            <div *ngIf="plataforma.invalid && plataforma.touched" class="error-text">
+              La plataforma es requerida
+            </div>
+          </div>
+
           <div class="form-group full-width">
-            <label for="descripcion">Descripción</label>
+            <label for="descripcion">Descripción del Juego</label>
             <textarea 
               id="descripcion"
               name="descripcion"
@@ -113,8 +144,8 @@
               #descripcion="ngModel"
               required
               class="form-input"
-              rows="3"
-              placeholder="Descripción del juego..."
+              rows="4"
+              placeholder="Describe las características principales del juego..."
             ></textarea>
             <div *ngIf="descripcion.invalid && descripcion.touched" class="error-text">
               La descripción es requerida
@@ -130,19 +161,9 @@
               [(ngModel)]="nuevoProducto.imagen"
               #imagen="ngModel"
               class="form-input"
-              placeholder="https://ejemplo.com/imagen.jpg"
+              placeholder="https://ejemplo.com/imagen-del-juego.jpg"
             >
-          </div>
-
-          <div class="form-group checkbox-group">
-            <label class="checkbox-label">
-              <input 
-                type="checkbox"
-                name="activo"
-                [(ngModel)]="nuevoProducto.activo"
-              >
-              Producto activo
-            </label>
+            <small class="help-text">URL de la imagen de portada del juego (opcional)</small>
           </div>
         </div>
 
@@ -199,34 +220,19 @@
       <!-- Category Filters -->
       <div class="category-filters">
         <button 
-          class="filter-btn active" 
+          class="filter-btn" 
+          [class.active]="selectedCategory === 'all'"
           (click)="filterByCategory('all')"
         >
           Todos
         </button>
         <button 
+          *ngFor="let categoria of categorias"
           class="filter-btn" 
-          (click)="filterByCategory('accion')"
+          [class.active]="selectedCategory === categoria.nombre"
+          (click)="filterByCategory(categoria.nombre)"
         >
-          Acción
-        </button>
-        <button 
-          class="filter-btn" 
-          (click)="filterByCategory('rpg')"
-        >
-          RPG
-        </button>
-        <button 
-          class="filter-btn" 
-          (click)="filterByCategory('deportes')"
-        >
-          Deportes
-        </button>
-        <button 
-          class="filter-btn" 
-          (click)="filterByCategory('carreras')"
-        >
-          Carreras
+          {{ categoria.nombre | titlecase }}
         </button>
       </div>
 
@@ -289,20 +295,21 @@
         </div>
         
         <div class="product-info">
-          <h3 class="product-title">{{ producto.nombre || producto.title }}</h3>
-          <p class="product-category">{{ producto.categoria || producto.category | titlecase }}</p>
-          
-          <div class="product-rating">
-            <span class="stars">⭐⭐⭐⭐⭐</span>
-            <span class="rating-value">({{ producto.rating || '4.5' }})</span>
-          </div>
+          <h3 class="product-title">{{ producto.nombre }}</h3>
+          <p class="product-category">{{ producto.categoria?.nombre | titlecase }}</p>
+          <p class="product-developer" *ngIf="producto.desarrollador">
+            <span class="label">🎮 Desarrollador:</span> {{ producto.desarrollador }}
+          </p>
+          <p class="product-platform" *ngIf="producto.plataforma">
+            <span class="label">📱 Plataforma:</span> {{ producto.plataforma }}
+          </p>
           
           <div class="product-price">
             <span *ngIf="producto.precio === 0" class="price-free">GRATIS</span>
             <span *ngIf="producto.precio > 0" class="price-current">${{ producto.precio | number:'1.2-2' }}</span>
           </div>
           
-          <div class="product-stock" *ngIf="producto.stock !== undefined">
+          <div class="product-stock">
             <span [class]="producto.stock > 0 ? 'stock-available' : 'stock-unavailable'">
               {{ producto.stock > 0 ? 'Stock: ' + producto.stock : 'Sin stock' }}
             </span>
