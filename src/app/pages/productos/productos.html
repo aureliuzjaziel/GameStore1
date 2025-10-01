@@ -153,17 +153,34 @@
           </div>
 
           <div class="form-group full-width">
-            <label for="imagen">URL de Imagen</label>
-            <input 
-              type="url" 
-              id="imagen"
-              name="imagen"
-              [(ngModel)]="nuevoProducto.imagen"
-              #imagen="ngModel"
-              class="form-input"
-              placeholder="https://ejemplo.com/imagen-del-juego.jpg"
-            >
-            <small class="help-text">URL de la imagen de portada del juego (opcional)</small>
+            <label for="imagen">Imagen del Juego</label>
+            <div class="file-upload-container">
+              <input 
+                type="file" 
+                id="imagen"
+                name="imagen"
+                (change)="onFileSelected($event)"
+                accept="image/*"
+                class="file-input"
+                #fileInput
+              >
+              <button type="button" class="file-button" (click)="fileInput.click()">
+                📁 Seleccionar Imagen
+              </button>
+              
+              <!-- Previsualización de imagen -->
+              <div *ngIf="imagePreview" class="image-preview-container">
+                <img [src]="imagePreview" alt="Previsualización" class="image-preview">
+                <button type="button" class="remove-image-btn" (click)="removeImage()">❌</button>
+              </div>
+              
+              <!-- Información del archivo -->
+              <div *ngIf="selectedFile" class="file-info">
+                <span>📎 {{ selectedFile.name }}</span>
+                <span class="file-size">({{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB)</span>
+              </div>
+            </div>
+            <small class="help-text">Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB</small>
           </div>
         </div>
 
@@ -279,7 +296,17 @@
 
         <div class="product-image">
           <div class="image-placeholder" *ngIf="!producto.imagen">🎮</div>
-          <img *ngIf="producto.imagen" [src]="producto.imagen" [alt]="producto.nombre || producto.title" class="product-img">
+          <img *ngIf="producto.imagen" 
+               [src]="getImageUrl(producto.imagen)" 
+               [alt]="producto.nombre || producto.title" 
+               class="product-img"
+               (load)="onImageLoad(producto.imagen)"
+               (error)="onImageError(producto.imagen, $event)"
+               loading="lazy"
+               [style.display]="producto.imageError ? 'none' : 'block'">
+          <div *ngIf="producto.imagen && producto.imageError" class="product-img-error">
+            🖼️ Error
+          </div>
           
           <!-- Badges dinámicos -->
           <div class="product-badges">

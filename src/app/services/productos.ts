@@ -33,6 +33,15 @@ export class Productos {
     return this.http.delete(`${this.API_PRODUCTOS}/${id}`);
   }
 
+  // === PRODUCTOS CON ARCHIVOS ===
+  postProductoWithFile(formData: FormData): Observable<any> {
+    return this.http.post(`${this.API_PRODUCTOS}/upload`, formData);
+  }
+
+  putProductoWithFile(formData: FormData): Observable<any> {
+    return this.http.put(`${this.API_PRODUCTOS}/upload`, formData);
+  }
+
   // === CATEGORÍAS ===
   getCategorias(): Observable<any> {
     return this.http.get(this.API_CATEGORIAS);

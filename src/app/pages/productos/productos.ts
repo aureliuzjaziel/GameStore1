@@ -45,6 +45,10 @@ export class ProductosComponent implements OnInit {
     categoria: { id: null as number | null }
   };
   
+  // Propiedades para manejo de archivos
+  selectedFile: File | null = null;
+  imagePreview: string | null = null;
+  
   // Mensajes
   successMessage: string = '';
   errorMessage: string = '';
@@ -110,25 +114,26 @@ export class ProductosComponent implements OnInit {
       this.errorMessage = '';
       this.successMessage = '';
 
-      // Preparar el objeto para enviar
-      const productoParaEnviar: any = {
-        nombre: this.nuevoProducto.nombre,
-        descripcion: this.nuevoProducto.descripcion,
-        precio: this.nuevoProducto.precio,
-        imagen: this.nuevoProducto.imagen,
-        stock: this.nuevoProducto.stock,
-        desarrollador: this.nuevoProducto.desarrollador,
-        plataforma: this.nuevoProducto.plataforma,
-        categoria: {
-          id: this.nuevoProducto.categoria.id
-        }
-      };
+      // Crear FormData para envío con archivo
+      const formData = new FormData();
+      formData.append('nombre', this.nuevoProducto.nombre);
+      formData.append('descripcion', this.nuevoProducto.descripcion);
+      formData.append('precio', this.nuevoProducto.precio.toString());
+      formData.append('stock', this.nuevoProducto.stock.toString());
+      formData.append('desarrollador', this.nuevoProducto.desarrollador);
+      formData.append('plataforma', this.nuevoProducto.plataforma);
+      formData.append('categoriaId', this.nuevoProducto.categoria.id?.toString() || '');
+      
+      // Agregar imagen si se seleccionó una
+      if (this.selectedFile) {
+        formData.append('imagen', this.selectedFile);
+      }
 
       if (this.editingProduct) {
         // Actualizar producto existente
-        productoParaEnviar.id = this.editingProduct.id;
+        formData.append('id', this.editingProduct.id.toString());
         
-        this.productosService.putProducto(productoParaEnviar).subscribe({
+        this.productosService.putProductoWithFile(formData).subscribe({
           next: (response: any) => {
             this.isSubmitting = false;
             this.successMessage = 'Producto actualizado exitosamente';
@@ -143,7 +148,7 @@ export class ProductosComponent implements OnInit {
         });
       } else {
         // Crear nuevo producto
-        this.productosService.postProducto(productoParaEnviar).subscribe({
+        this.productosService.postProductoWithFile(formData).subscribe({
           next: (response: any) => {
             this.isSubmitting = false;
             this.successMessage = 'Producto creado exitosamente';
@@ -201,6 +206,9 @@ export class ProductosComponent implements OnInit {
       plataforma: '',
       categoria: { id: null }
     };
+    // Limpiar archivo seleccionado y previsualización
+    this.selectedFile = null;
+    this.imagePreview = null;
   }
 
   clearMessages() {
@@ -239,5 +247,77 @@ export class ProductosComponent implements OnInit {
 
   onSearchChange() {
     this.filtrarProductos();
+  }
+
+  // Métodos para manejo de archivos
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        this.errorMessage = 'Por favor selecciona un archivo de imagen válido';
+        return;
+      }
+
+      // Validar tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.errorMessage = 'La imagen debe ser menor a 5MB';
+        return;
+      }
+
+      this.selectedFile = file;
+      this.errorMessage = '';
+
+      // Crear previsualización
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeImage() {
+    this.selectedFile = null;
+    this.imagePreview = null;
+    this.nuevoProducto.imagen = '';
+  }
+
+  // Método para obtener la URL completa de la imagen
+  getImageUrl(imagePath: string): string {
+    if (!imagePath) return '';
+    
+    // Si ya es una URL completa, la devolvemos tal como está
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    // Si es una ruta relativa, agregamos la URL base del servidor
+    const fullUrl = `http://localhost:9090${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+    
+    return fullUrl;
+  }
+
+  // Métodos para manejo de errores de imagen
+  onImageLoad(imagePath: string) {
+    // Imagen cargada correctamente
+    const producto = this.productos.find(p => p.imagen === imagePath);
+    if (producto) {
+      producto.imageError = false;
+    }
+  }
+
+  onImageError(imagePath: string, event: any) {
+    // Marcar que la imagen tiene error para mostrar placeholder
+    const producto = this.productos.find(p => p.imagen === imagePath);
+    if (producto) {
+      producto.imageError = true;
+    }
+    
+    // También marcar en productos filtrados
+    const productoFiltrado = this.productosFiltrados.find(p => p.imagen === imagePath);
+    if (productoFiltrado) {
+      productoFiltrado.imageError = true;
+    }
   }
 }
