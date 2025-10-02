@@ -40,7 +40,8 @@ export class Login {
         next: (response) => {
           this.isSubmitting = false;
           if (response.success) {
-            this.servicio2.login();
+            // CORREGIR: Llamar a login() para establecer el estado, no solo verificar
+            this.servicio2.login(response.user.nombre);
             this.successMessage = `¡Bienvenido ${response.user.nombre}!`;
             
             // Redirigir después de 1 segundo

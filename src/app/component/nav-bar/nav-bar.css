@@ -239,6 +239,96 @@
   background: linear-gradient(45deg, #ff00ff, #00ffff);
 }
 
+/* Estilos para usuario logueado */
+.user-info .user-welcome {
+  color: #00f5ff !important;
+  font-weight: 500;
+  cursor: default;
+}
+
+.user-welcome .icon {
+  color: #ff6b9d;
+}
+
+/* Botón de logout */
+.logout-btn {
+  background: linear-gradient(135deg, #ff6b9d, #c44569);
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: white;
+  text-decoration: none;
+}
+
+.logout-btn:hover {
+  background: linear-gradient(135deg, #c44569, #ff6b9d);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+}
+
+/* Dropdown del perfil */
+.profile-menu {
+  position: relative;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: rgba(30, 39, 73, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.profile-menu:hover .profile-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.user-name {
+  display: block;
+  color: #00f5ff;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 107, 157, 0.2);
+  color: #ff6b9d;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .nav-container {
@@ -278,6 +368,20 @@
 
   .logo-text {
     display: none;
+  }
+
+  .profile-dropdown {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    margin-top: 1rem;
+    background: rgba(20, 29, 63, 0.8);
+  }
+  
+  .logout-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 

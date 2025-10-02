@@ -20,18 +20,38 @@
           <span>Juegos</span>
         </a>
       </li>
-      <li class="nav-item">
-        <a routerLink="/login" class="nav-link" routerLinkActive="active" (click)="closeMobileMenu()">
-          <i class="icon">🔐</i>
-          <span>Login</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="/registro" class="nav-link" routerLinkActive="active" (click)="closeMobileMenu()">
-          <i class="icon">👤</i>
-          <span>Registro</span>
-        </a>
-      </li>
+      
+      <!-- Mostrar Login y Registro solo si NO está logueado -->
+      <ng-container *ngIf="!logeado()">
+        <li class="nav-item">
+          <a routerLink="/login" class="nav-link" routerLinkActive="active" (click)="closeMobileMenu()">
+            <i class="icon">🔐</i>
+            <span>Login</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/registro" class="nav-link" routerLinkActive="active" (click)="closeMobileMenu()">
+            <i class="icon">👤</i>
+            <span>Registro</span>
+          </a>
+        </li>
+      </ng-container>
+
+      <!-- Mostrar opciones de usuario logueado -->
+      <ng-container *ngIf="logeado()">
+        <li class="nav-item user-info">
+          <span class="nav-link user-welcome">
+            <i class="icon">👋</i>
+            <span>Hola, {{ getUserName() }}</span>
+          </span>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link logout-btn" (click)="logout()">
+            <i class="icon">🚪</i>
+            <span>Cerrar Sesión</span>
+          </button>
+        </li>
+      </ng-container>
     </ul>
 
     <!-- Search Bar -->
@@ -46,10 +66,20 @@
         <span class="cart-icon">🛒</span>
         <span class="cart-count">0</span>
       </button>
-      <div class="profile-menu">
+      
+      <!-- Perfil solo si está logueado -->
+      <div class="profile-menu" *ngIf="logeado()">
         <button class="profile-btn">
           <span class="profile-avatar">👤</span>
         </button>
+        <!-- Dropdown menu opcional -->
+        <div class="profile-dropdown">
+          <span class="user-name">{{ getUserName() }}</span>
+          <button class="dropdown-item" (click)="logout()">
+            <i class="icon">🚪</i>
+            Cerrar Sesión
+          </button>
+        </div>
       </div>
     </div>
 
