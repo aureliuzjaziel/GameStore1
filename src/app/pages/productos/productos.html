@@ -347,9 +347,11 @@
               class="btn-add-cart"
               [disabled]="producto.stock === 0"
               [class.disabled]="producto.stock === 0"
+              (click)="agregarAlCarrito(producto)"
             >
               <span *ngIf="producto.precio === 0">📥 Descargar Gratis</span>
-              <span *ngIf="producto.precio > 0 && producto.stock > 0">🛒 Agregar al Carrito</span>
+              <span *ngIf="producto.precio > 0 && producto.stock > 0 && !estaEnCarrito(producto.id)">🛒 Agregar al Carrito</span>
+              <span *ngIf="producto.precio > 0 && producto.stock > 0 && estaEnCarrito(producto.id)">✅ En Carrito</span>
               <span *ngIf="producto.stock === 0">❌ Sin Stock</span>
             </button>
             <button class="btn-wishlist">❤️</button>

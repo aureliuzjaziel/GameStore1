@@ -62,10 +62,52 @@
 
     <!-- Cart & Profile -->
     <div class="nav-actions">
-      <button class="cart-btn">
-        <span class="cart-icon">🛒</span>
-        <span class="cart-count">0</span>
-      </button>
+      <div class="cart-container">
+        <button class="cart-btn" (click)="toggleCarrito()">
+          <span class="cart-icon">🛒</span>
+          <span class="cart-count" *ngIf="getCantidadCarrito() > 0">{{ getCantidadCarrito() }}</span>
+        </button>
+        
+        <!-- Dropdown del carrito -->
+        <div class="cart-dropdown" *ngIf="isCarritoOpen" (click)="$event.stopPropagation()">
+          <div class="cart-header">
+            <h3>Carrito de Compras</h3>
+            <button class="close-cart" (click)="cerrarCarrito()">✕</button>
+          </div>
+          
+          <div class="cart-content" *ngIf="getProductosCarrito().length > 0; else carritoVacio">
+            <div class="cart-item" *ngFor="let producto of getProductosCarrito()">
+              <img [src]="producto.imagen" [alt]="producto.nombre" class="cart-item-img">
+              <div class="cart-item-info">
+                <h4>{{ producto.nombre }}</h4>
+                <p class="cart-item-price">${{ producto.precio }}</p>
+                <div class="cart-item-quantity">
+                  <span>Cantidad: {{ producto.cantidad }}</span>
+                </div>
+              </div>
+              <div class="cart-item-total">
+                ${{ (producto.precio * producto.cantidad).toFixed(2) }}
+              </div>
+            </div>
+            
+            <div class="cart-footer">
+              <div class="cart-total">
+                <strong>Total: ${{ getTotalCarrito().toFixed(2) }}</strong>
+              </div>
+              <button class="btn-checkout" (click)="procesarCompra()">
+                🛒 Procesar Compra
+              </button>
+            </div>
+          </div>
+          
+          <ng-template #carritoVacio>
+            <div class="cart-empty">
+              <p>Tu carrito está vacío</p>
+              <span class="empty-icon">🛒</span>
+            </div>
+          </ng-template>
+        </div>
+      </div>
       
       <!-- Perfil solo si está logueado -->
       <div class="profile-menu" *ngIf="logeado()">

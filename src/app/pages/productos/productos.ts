@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Productos as ProductosService } from '../../services/productos';
 import { LoginA } from '../../services/login-a';
+import { CarritoService } from '../../services/carrito.service';
 
 @Component({
   selector: 'app-productos',
@@ -14,6 +15,7 @@ export class ProductosComponent implements OnInit {
   // Servicios inyectados
   productosService = inject(ProductosService);
   loginService = inject(LoginA);
+  carritoService = inject(CarritoService);
 
   // Search and filter properties
   searchTerm: string = '';
@@ -319,5 +321,26 @@ export class ProductosComponent implements OnInit {
     if (productoFiltrado) {
       productoFiltrado.imageError = true;
     }
+  }
+
+  // Métodos para el carrito
+  agregarAlCarrito(producto: any) {
+    if (producto.stock > 0) {
+      const agregado = this.carritoService.agregarProducto(producto);
+      if (agregado) {
+        this.successMessage = `${producto.nombre} agregado al carrito 🛒`;
+        setTimeout(() => this.successMessage = '', 3000);
+      } else {
+        this.errorMessage = 'No hay stock suficiente';
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    } else {
+      this.errorMessage = 'Producto sin stock';
+      setTimeout(() => this.errorMessage = '', 3000);
+    }
+  }
+
+  estaEnCarrito(productoId: number): boolean {
+    return this.carritoService.estaEnCarrito(productoId);
   }
 }

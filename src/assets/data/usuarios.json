@@ -17,6 +17,15 @@
       "ciudad": "quito",
       "fechaRegistro": "2025-09-30T23:31:34.331Z",
       "id": 2
+    },
+    {
+      "nombre": "pepe",
+      "email": "pepe@yopmail.com",
+      "password": "123456",
+      "edad": 20,
+      "ciudad": "quito",
+      "fechaRegistro": "2025-10-04T15:04:07.044Z",
+      "id": 3
     }
   ]
 }
